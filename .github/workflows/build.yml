@@ -2,6 +2,8 @@ name: Build and Release Firmware
 
 on:
   push:
+    tags:
+      - 'v*'
     paths:
       - 'NTP_Clock.ino'
       - '.github/workflows/build.yml'
