@@ -33,7 +33,7 @@ jobs:
           
       - name: Compile firmware
         run: |
-          arduino-cli compile --fqbn esp32:esp32:esp32s3 NTP_Clock.ino --build-path ./build
+          arduino-cli compile --fqbn esp32:esp32:esp32s3 . --build-path ./build
           
       - name: Extract firmware binary
         run: |
