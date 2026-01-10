@@ -33,7 +33,10 @@ jobs:
           
       - name: Compile firmware
         run: |
-          arduino-cli compile --fqbn esp32:esp32:esp32s3 . --build-path ./build
+          # Create sketch directory structure that Arduino expects
+          mkdir -p NTP_Clock
+          cp NTP_Clock.ino NTP_Clock/
+          arduino-cli compile --fqbn esp32:esp32:esp32s3 NTP_Clock --build-path ./build
           
       - name: Extract firmware binary
         run: |
