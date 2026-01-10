@@ -16,6 +16,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
         
       - name: Set up Arduino CLI
         uses: arduino/setup-arduino-cli@v2
@@ -59,7 +62,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git add installer/firmware.bin
           git commit -m "Update firmware binary for ${{ github.ref_name }}" || exit 0
           git push origin HEAD:main
