@@ -8,8 +8,8 @@ on:
     paths:
       - 'NTP_Clock.ino'
       - '.github/workflows/build.yml'
-    tags:
-      - 'v*.*.*'
+  tags:
+    - 'v*.*.*'
   workflow_dispatch:
 
 jobs:
