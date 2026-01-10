@@ -32,32 +32,33 @@ jobs:
           
       - name: Install required libraries
         run: |
-          arduino-cli lib install "WiFi" "SPI" "Preferences" "WebServer"
+          # WiFi, SPI, Preferences, and WebServer are built into ESP32 core
+          # No additional libraries needed
+          echo "Using built-in ESP32 libraries"
           
       - name: Compile firmware
-        working-directory: NTP_Clock
         run: |
           arduino-cli compile --fqbn esp32:esp32:esp32s3 NTP_Clock.ino --build-path ./build
           
       - name: Extract firmware binary
-        working-directory: NTP_Clock
         run: |
-          mkdir -p firmware
-          find build -name "*.bin" -type f | head -1 | xargs -I {} cp {} firmware/firmware.bin
-          ls -lh firmware/
+          mkdir -p installer
+          # Copy the merged binary (complete firmware image) to installer directory
+          cp build/NTP_Clock.ino.merged.bin installer/firmware.bin
+          ls -lh installer/firmware.bin
           
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: firmware
-          path: NTP_Clock/firmware/firmware.bin
+          path: installer/firmware.bin
           retention-days: 30
           
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: NTP_Clock/firmware/firmware.bin
+          files: installer/firmware.bin
           draft: false
           prerelease: false
           generate_release_notes: true
