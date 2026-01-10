@@ -1,0 +1,63 @@
+name: Build and Release Firmware
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main  # Checkout main branch, not the tag
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+        
+      - name: Set up Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+        with:
+          version: "1.2.0"
+          
+      - name: Install ESP32 platform
+        run: |
+          arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          arduino-cli core install esp32:esp32@3.3.5
+          
+      - name: Compile firmware
+        run: |
+          mkdir -p NTP_Clock
+          cp NTP_Clock.ino NTP_Clock/
+          arduino-cli compile --fqbn esp32:esp32:esp32s3 NTP_Clock --build-path ./build
+          
+      - name: Copy firmware to installer directory
+        run: |
+          mkdir -p installer
+          cp build/NTP_Clock.ino.merged.bin installer/firmware.bin
+          ls -lh installer/
+          
+      - name: Commit firmware to repository
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add installer/firmware.bin
+          git diff --staged --quiet || git commit -m "Build firmware for ${{ github.ref_name }}"
+          git push origin main
+          
+      - name: Create Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: installer/firmware.bin
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

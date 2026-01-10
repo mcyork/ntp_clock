@@ -1,0 +1,17 @@
+{
+  "name": "NTP Clock",
+  "version": "latest",
+  "home_assistant_domain": "",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "https://github.com/mcyork/ntp_clock/releases/latest/download/firmware.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}
