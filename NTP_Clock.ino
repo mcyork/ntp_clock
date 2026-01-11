@@ -124,12 +124,13 @@ void setup() {
   improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32_S3, "NTP Clock", FIRMWARE_VERSION, "NTP Clock");
   improvSerial.onImprovConnected(onImprovConnected);
   
-  // Give Improv WiFi a grace period to receive commands from ESP Web Tools
-  // Process Serial for 3 seconds to allow Improv WiFi provisioning
-  unsigned long improvGracePeriod = millis() + 3000;
+  // Give Improv WiFi a generous grace period to receive commands from ESP Web Tools
+  // ESP Web Tools needs time to detect device, establish Serial, and send Improv commands
+  // 10 seconds gives plenty of time without impacting user experience (device is just booting anyway)
+  unsigned long improvGracePeriod = millis() + 10000; // 10 second grace period
   while (millis() < improvGracePeriod) {
-    improvSerial.handleSerial();
-    delay(10);
+    improvSerial.handleSerial(); // Process Improv WiFi commands continuously
+    delay(5); // Small delay to avoid tight loop, but keep responsive
   }
   
   // Init Pins
