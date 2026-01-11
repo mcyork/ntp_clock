@@ -8,58 +8,61 @@ import serial
 import time
 import struct
 
-# Improv WiFi Protocol Constants
+# Improv WiFi Protocol Constants (from ImprovTypes.h)
 IMPROV_SERIAL_VERSION = 1
-IMPROV_CMD_GET_CURRENT_STATE = 0x01
-IMPROV_CMD_GET_DEVICE_INFO = 0x02
-IMPROV_CMD_GET_WIFI_NETWORKS = 0x03
-IMPROV_CMD_SET_WIFI = 0x04
+IMPROV_TYPE_RPC = 0x03  # RPC Command type
+IMPROV_CMD_GET_CURRENT_STATE = 0x02  # Note: 0x02, not 0x01!
+IMPROV_CMD_GET_DEVICE_INFO = 0x03
+IMPROV_CMD_GET_WIFI_NETWORKS = 0x04
+IMPROV_CMD_SET_WIFI = 0x01
 
-IMPROV_STATE_STOPPED = 0x01
-IMPROV_STATE_AWAITING_AUTHORIZATION = 0x02
-IMPROV_STATE_AUTHORIZED = 0x03
-IMPROV_STATE_PROVISIONING = 0x04
-IMPROV_STATE_PROVISIONED = 0x05
-
-def calculate_crc(data):
-    """Calculate CRC-8 for Improv WiFi protocol"""
-    crc = 0
+def calculate_checksum(data):
+    """Calculate checksum for Improv WiFi protocol - simple sum of all bytes"""
+    checksum = 0
     for byte in data:
-        crc ^= byte
-        for _ in range(8):
-            if crc & 0x80:
-                crc = (crc << 1) ^ 0x31
-            else:
-                crc <<= 1
-            crc &= 0xFF
-    return crc
+        checksum = (checksum + byte) & 0xFF
+    return checksum
 
 def create_improv_packet(command, data=b''):
     """Create an Improv WiFi Serial protocol packet
-    Format: IM (2 bytes) + Version (1) + Command (1) + Length (1) + Data (N) + CRC (1)
+    Format: IMPROV (6 bytes) + Version (1) + Type (1) + Length (1) + Data (N) + Checksum (1)
+    Data format: Command (1) + DataLength (1) + Data (N)
     """
-    packet = bytearray([ord('I'), ord('M'), IMPROV_SERIAL_VERSION, command, len(data)])
-    packet.extend(data)
-    crc = calculate_crc(packet)
-    packet.append(crc)
+    # Build RPC data: command byte + data length byte + data bytes
+    rpc_data = bytearray([command, len(data)])
+    rpc_data.extend(data)
+    
+    # Build packet: IMPROV header + version + type + length + data
+    packet = bytearray([ord('I'), ord('M'), ord('P'), ord('R'), ord('O'), ord('V')])
+    packet.append(IMPROV_SERIAL_VERSION)
+    packet.append(IMPROV_TYPE_RPC)
+    packet.append(len(rpc_data))  # Length of RPC data
+    packet.extend(rpc_data)
+    
+    # Calculate checksum (simple sum of all bytes)
+    checksum = calculate_checksum(packet)
+    packet.append(checksum)
+    
     return bytes(packet)
 
 def send_command(ser, command, data=b''):
     """Send an Improv WiFi command and return response"""
     # Clear any pending serial data first
     ser.reset_input_buffer()
-    time.sleep(0.1)
+    time.sleep(0.2)  # Give device time to process
     
     packet = create_improv_packet(command, data)
     print(f"Sending command 0x{command:02x}: {packet.hex()}")
     print(f"  Packet bytes: {[hex(b) for b in packet]}")
+    print(f"  Packet length: {len(packet)} bytes")
     
     ser.write(packet)
     ser.flush()
+    print("  Packet sent, waiting for response...")
     
     # Wait longer for response and check multiple times
     response_data = bytearray()
-    for i in range(20):  # Wait up to 2 seconds
+    for i in range(30):  # Wait up to 3 seconds
         time.sleep(0.1)
         if ser.in_waiting > 0:
             chunk = ser.read(ser.in_waiting)
@@ -79,14 +82,23 @@ def send_command(ser, command, data=b''):
             pass
         
         # Check for Improv WiFi response format
-        if len(response_data) >= 2 and response_data[0:2] == b'IM':
+        if len(response_data) >= 6 and response_data[0:6] == b'IMPROV':
             print("  ✓ Valid Improv response header detected!")
             return bytes(response_data)
+        elif len(response_data) >= 2 and response_data[0:2] == b'IM':
+            print("  ✓ Partial Improv response header detected!")
+            return bytes(response_data)
         else:
-            print("  ⚠ Response doesn't start with 'IM' - might be debug output or wrong format")
+            print("  ⚠ Response doesn't start with 'IMPROV' - might be debug output or wrong format")
             return bytes(response_data)
     else:
-        print("  ✗ No response received after 2 seconds")
+        print("  ✗ No response received after 3 seconds")
+        # Try reading one more time after a longer delay
+        time.sleep(0.5)
+        if ser.in_waiting > 0:
+            chunk = ser.read(ser.in_waiting)
+            print(f"  Late response: {chunk.hex()}")
+            return bytes(chunk)
         return None
 
 def main():
