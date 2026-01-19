@@ -23,7 +23,7 @@
  * - Serial logging with [STATE], [WIFI], [NTP], [BTN] prefixes
  */
 
- #define FIRMWARE_VERSION "3.0"
+ #define FIRMWARE_VERSION "3.01"
 
 #include <WiFi.h>
 #include <WebServer.h>
@@ -174,6 +174,7 @@ const int MAX_RECONNECT_BEFORE_AP = 36;           // ~30 min before AP fallback 
 
 // IP display state
 bool ipScrollingStarted = false;      // Single flag, not scattered statics
+unsigned long ipScrollDuration = 0;   // Calculated duration for exact number of scroll cycles
 
 // Beep state variables (using LEDC instead of tone() to avoid timer conflicts)
 unsigned long beepEndTime = 0;
@@ -575,7 +576,7 @@ void loop() {
       break;
 
     // -------------------------------------------------------------------------
-    // STATE_SHOWING_IP: Display IP address after connection (13 seconds)
+    // STATE_SHOWING_IP: Display IP address exactly 2 complete scroll cycles
     // -------------------------------------------------------------------------
     case STATE_SHOWING_IP:
       if (!ipScrollingStarted) {
@@ -584,9 +585,18 @@ void loop() {
         sprintf(ipStr, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
         display.startScrolling(ipStr, 350);
         ipScrollingStarted = true;
+
+        // Calculate exact duration for 2 complete scroll cycles
+        // Scroll goes from position 0 to (len-4), then resets = (len-3) steps per cycle
+        // Each step takes 350ms
+        int len = strlen(ipStr);
+        int stepsPerCycle = (len > 4) ? (len - 3) : 1;
+        ipScrollDuration = (unsigned long)stepsPerCycle * 350 * 2;  // 2 cycles
+
+        Serial.printf("[IP] Showing %s for %lu ms (2 cycles)\n", ipStr, ipScrollDuration);
       }
 
-      if (stateElapsed >= 13000) {
+      if (stateElapsed >= ipScrollDuration) {
         display.clear();
         changeState(STATE_RUNNING);
       }
@@ -756,17 +766,22 @@ void handleButtons() {
       modeLongPressHandled = true;
       startBeep(2500, 100);
 
-      // Show IP address for 5 seconds
+      // Show IP address for exactly 2 scroll cycles
       if (currentState == STATE_RUNNING && WiFi.status() == WL_CONNECTED) {
         IPAddress ip = WiFi.localIP();
         char ipStr[16];
         sprintf(ipStr, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
         display.startScrolling(ipStr, 350);
-        Serial.printf("[BTN] Long press: Showing IP %s\n", ipStr);
 
-        // Wait for scroll to complete or timeout
-        unsigned long scrollStart = now;
-        while (millis() - scrollStart < 8000) {
+        // Calculate exact duration for 2 complete scroll cycles
+        int len = strlen(ipStr);
+        int stepsPerCycle = (len > 4) ? (len - 3) : 1;
+        unsigned long scrollDuration = (unsigned long)stepsPerCycle * 350 * 2;
+
+        Serial.printf("[BTN] Long press: Showing IP %s for %lu ms\n", ipStr, scrollDuration);
+
+        unsigned long scrollStart = millis();
+        while (millis() - scrollStart < scrollDuration) {
           display.update();
           delay(10);
         }
@@ -775,11 +790,17 @@ void handleButtons() {
       }
       else if (currentState == STATE_AP_MODE) {
         // In AP mode, show the SSID instead
-        display.startScrolling(apSSID.c_str(), 350);
-        Serial.printf("[BTN] Long press: Showing SSID %s\n", apSSID.c_str());
+        const char* ssid = apSSID.c_str();
+        display.startScrolling(ssid, 350);
 
-        unsigned long scrollStart = now;
-        while (millis() - scrollStart < 8000) {
+        int len = strlen(ssid);
+        int stepsPerCycle = (len > 4) ? (len - 3) : 1;
+        unsigned long scrollDuration = (unsigned long)stepsPerCycle * 350 * 2;
+
+        Serial.printf("[BTN] Long press: Showing SSID %s for %lu ms\n", ssid, scrollDuration);
+
+        unsigned long scrollStart = millis();
+        while (millis() - scrollStart < scrollDuration) {
           display.update();
           server.handleClient();  // Keep serving in AP mode
           delay(10);
