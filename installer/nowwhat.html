@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You Got a Clock!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+            margin: 20px 0;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        p {
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 0.95em;
+            color: #856404;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 0.95em;
+            color: #0c5460;
+        }
+
+        .install-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px 0;
+        }
+
+        .install-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        ol, ul {
+            margin-left: 25px;
+            margin-bottom: 15px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        td {
+            color: #555;
+        }
+
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 0.85em;
+            text-align: center;
+        }
+
+        a {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>You Got a Clock!</h1>
+        <p class="subtitle">
+            Hey! If you're reading this, I gave you one of my prototype NTP clocks.
+            Welcome to the club of "Ian had to buy five of these."
+        </p>
+
+        <h2>What You Have</h2>
+        <p>
+            It's a WiFi-connected clock that syncs time from the internet. Plug it into USB-C power,
+            give it your WiFi credentials, and it'll show you the time. Forever. Accurately. That's it.
+        </p>
+
+        <div class="warning-box">
+            <strong>⚠️ The thermal probe port on the side? Ignore it.</strong><br>
+            The sensor chip on the board is broken on all of these. I designed it for temperature
+            monitoring but the hardware doesn't work. The clock part works great though, so here we are.
+        </div>
+
+        <h2>First Time Setup</h2>
+        <ol>
+            <li><strong>Plug it in</strong> via USB-C (any phone charger works)</li>
+            <li><strong>Wait for "----"</strong> on the display — that means it's ready for WiFi setup</li>
+            <li><strong>Go to the web installer</strong> (button below)</li>
+            <li><strong>Click "Install"</strong> and follow the prompts</li>
+            <li><strong>Enter your WiFi credentials</strong> when asked</li>
+            <li>It'll connect, sync time, and show you its IP address twice</li>
+            <li>Done. It's a clock now.</li>
+        </ol>
+
+        <div class="button-container">
+            <a href="index.html" class="install-button">Open Web Installer →</a>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ Moving to a different WiFi network?</strong><br>
+            Just go through the installer again. Your timezone and preferences will be remembered.
+        </div>
+
+        <h2>The Buttons</h2>
+        <table>
+            <tr>
+                <th>Button</th>
+                <th>Short Press</th>
+                <th>Long Press (2 sec)</th>
+            </tr>
+            <tr>
+                <td><strong>MODE</strong></td>
+                <td>Toggle 12/24 hour</td>
+                <td>Show IP address</td>
+            </tr>
+            <tr>
+                <td><strong>UP</strong></td>
+                <td>Brightness up</td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><strong>DOWN</strong></td>
+                <td>Brightness down</td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><strong>UP + DOWN</strong></td>
+                <td colspan="2">Force WiFi reconnect</td>
+            </tr>
+        </table>
+
+        <h2>If Your WiFi Goes Down</h2>
+        <p>
+            Don't panic. The clock will keep trying to reconnect for about 30 minutes
+            (with increasing delays between attempts). If your router reboots overnight,
+            it'll reconnect automatically when it comes back.
+        </p>
+        <p>
+            If it's been down too long and shows "AP" mode, just power cycle it —
+            your WiFi credentials are saved.
+        </p>
+
+        <h2>Factory Reset</h2>
+        <p>If you want to wipe everything and start fresh:</p>
+        <ol>
+            <li>Connect to the clock's WiFi hotspot (it'll be named <code>NTP_Clock_XXXXXX</code>)</li>
+            <li>Go to <code>192.168.4.1</code> in your browser</li>
+            <li>Click "Factory Reset"</li>
+        </ol>
+        <p>Or just give it back to me and I'll fix it.</p>
+
+        <h2>Technical Bits</h2>
+        <ul>
+            <li><strong>Hardware:</strong> ESP32-S3-MINI-1, MAX7219 7-segment display</li>
+            <li><strong>Firmware:</strong> Open source, <a href="https://github.com/mcyork/ntp_clock">in this repo</a></li>
+            <li><strong>Time source:</strong> pool.ntp.org</li>
+            <li><strong>Timezone:</strong> Auto-detected from your IP on first connection</li>
+        </ul>
+        <p>
+            The display is actually 8 digits but only 4 are populated.
+            The decimal point blinks like a colon to show seconds.
+        </p>
+
+        <h2>Problems?</h2>
+        <p>
+            Text me. Or if you're feeling fancy,
+            <a href="https://github.com/mcyork/ntp_clock/issues">open an issue</a>.
+        </p>
+
+        <div class="footer">
+            Built with too much coffee and not enough sleep. Enjoy your clock.
+        </div>
+    </div>
+</body>
+</html>
