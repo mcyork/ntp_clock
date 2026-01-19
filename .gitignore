@@ -30,3 +30,6 @@ installer/firmware.bin
 
 # Logs
 *.log
+
+# Hardware design docs (private)
+docs/
