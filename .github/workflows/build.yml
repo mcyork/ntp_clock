@@ -72,6 +72,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git add -f installer/firmware.bin
           git diff --staged --quiet || git commit -m "Build firmware for ${{ github.ref_name }}"
+          git pull --rebase origin main
           git push origin main
           
       - name: Upload firmware artifact
